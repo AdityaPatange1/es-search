@@ -9,7 +9,7 @@ import { queryData, scrollFetch, deleteDocuments } from './elasticsearch';
 import { QueryOptions, ElasticsearchHit } from './types';
 import chalk from 'chalk';
 
-const VERSION = '1.0.0';
+const VERSION = '1.0.2';
 
 interface CLIOptions {
   database?: string;
