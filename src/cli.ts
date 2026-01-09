@@ -5,21 +5,34 @@
 
 import { Command } from 'commander';
 import { createLogger, setLogLevel, Logger } from './logger';
-import {
-  queryData,
-  scrollFetch,
-  deleteDocuments,
-} from './elasticsearch';
+import { queryData, scrollFetch, deleteDocuments } from './elasticsearch';
 import { QueryOptions, ElasticsearchHit } from './types';
 import chalk from 'chalk';
 
 const VERSION = '1.0.0';
 
+interface CLIOptions {
+  database?: string;
+  query?: string;
+  from?: string;
+  size?: string;
+  source?: string;
+  sort?: string;
+  scroll?: boolean;
+  delete?: string;
+  extend?: string;
+  q2?: boolean;
+  aggsTerms?: string;
+  verbose?: boolean;
+  banner?: boolean;
+}
+
 /**
  * 🎨 Display banner
  */
 function displayBanner(): void {
-  console.log(chalk.cyan(`
+  console.log(
+    chalk.cyan(`
   ╔═══════════════════════════════════════════════════════════════╗
   ║                                                               ║
   ║   ⚡ ${chalk.yellow('ELECTRIC SAFAI')} ⚡                                      ║
@@ -28,7 +41,8 @@ function displayBanner(): void {
   ║   🔥 ${chalk.red('Saf')} (Certain Arsenic Fire) + ${chalk.blue('AI')} (Artificial Intelligence)   ║
   ║                                                               ║
   ╚═══════════════════════════════════════════════════════════════╝
-  `));
+  `)
+  );
 }
 
 /**
@@ -55,16 +69,16 @@ export async function main(): Promise<void> {
     .option('--aggs-terms [field]', 'Perform terms aggregation on specified field')
     .option('--verbose', 'Enable verbose/debug output')
     .option('--no-banner', 'Disable banner display')
-    .action(async (options) => {
-      if (options.banner !== false) {
+    .action(async (opts: CLIOptions) => {
+      if (opts.banner !== false) {
         displayBanner();
       }
 
-      if (options.verbose) {
+      if (opts.verbose) {
         setLogLevel('debug');
       }
 
-      await runSearch(options, logger);
+      await runSearch(opts, logger);
     });
 
   await program.parseAsync(process.argv);
@@ -73,7 +87,7 @@ export async function main(): Promise<void> {
 /**
  * 🔍 Execute search operation
  */
-async function runSearch(options: Record<string, unknown>, logger: Logger): Promise<void> {
+async function runSearch(options: CLIOptions, logger: Logger): Promise<void> {
   // Validate required options
   if (!options.query || !options.database) {
     console.log(chalk.red('❌ Error: --database and --query are required'));
@@ -81,7 +95,7 @@ async function runSearch(options: Record<string, unknown>, logger: Logger): Prom
     process.exit(1);
   }
 
-  const database = options.database as string;
+  const database = options.database;
   if (!database.endsWith('/_search')) {
     logger.warn('--database value should end with /_search');
     console.log(chalk.yellow('⚠️  Warning: --database value should end with /_search'));
@@ -89,16 +103,16 @@ async function runSearch(options: Record<string, unknown>, logger: Logger): Prom
 
   const queryOptions: QueryOptions = {
     database,
-    query: options.query as string,
-    from: options.from !== undefined ? parseInt(options.from as string, 10) : undefined,
-    size: options.size !== undefined ? parseInt(options.size as string, 10) : 10,
-    source: options.source as string | undefined,
-    sort: options.sort as string | undefined,
-    scroll: options.scroll as boolean | undefined,
-    delete: options.delete as string | undefined,
-    extend: options.extend as string | undefined,
-    q2: options.q2 as boolean | undefined,
-    aggsTerms: options.aggsTerms as string | undefined,
+    query: options.query,
+    from: options.from !== undefined ? parseInt(options.from, 10) : undefined,
+    size: options.size !== undefined ? parseInt(options.size, 10) : 10,
+    source: options.source,
+    sort: options.sort,
+    scroll: options.scroll,
+    delete: options.delete,
+    extend: options.extend,
+    q2: options.q2,
+    aggsTerms: options.aggsTerms,
   };
 
   try {

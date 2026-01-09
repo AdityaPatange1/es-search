@@ -8,7 +8,6 @@ import {
   ElasticsearchHit,
   ElasticsearchResponse,
   QueryOptions,
-  RequestParams,
   FetchResult,
   DEFAULT_CONFIG,
 } from './types';
@@ -41,7 +40,7 @@ export async function queryData(
   // Parse and convert query
   let queryBody: Record<string, unknown>;
   try {
-    const parsedQuery = JSON.parse(options.query);
+    const parsedQuery = JSON.parse(options.query) as Record<string, unknown>;
     // Simple query conversion (mimicking mqes.convQuery behavior)
     queryBody = convertQuery(parsedQuery, options.q2);
   } catch (error) {
@@ -68,7 +67,7 @@ export async function queryData(
   // Merge extended options
   if (options.extend) {
     try {
-      const extendObj = JSON.parse(options.extend);
+      const extendObj = JSON.parse(options.extend) as Record<string, unknown>;
       Object.assign(queryBody, extendObj);
     } catch (error) {
       throw new Error(`Invalid extend JSON: ${options.extend}`);
@@ -85,8 +84,8 @@ export async function queryData(
   logger.debug('Request: %j', requestConfig);
 
   try {
-    const response = await axios(requestConfig);
-    const body: ElasticsearchResponse = response.data;
+    const response = await axios<ElasticsearchResponse>(requestConfig);
+    const body = response.data;
 
     if (body.error) {
       throw new Error(`Elasticsearch error: ${JSON.stringify(body.error)}`);
@@ -108,9 +107,7 @@ export async function queryData(
     }
 
     const hits = body.hits.hits;
-    const total = typeof body.hits.total === 'number'
-      ? body.hits.total
-      : body.hits.total.value;
+    const total = typeof body.hits.total === 'number' ? body.hits.total : body.hits.total.value;
 
     logger.info('total %d / %d', hits.length, total);
     return hits;
@@ -125,11 +122,7 @@ export async function queryData(
 /**
  * 📜 Fetch next batch using scroll API
  */
-export async function fetch(
-  database: string,
-  q2: boolean,
-  logger: Logger
-): Promise<FetchResult> {
+export async function fetch(database: string, q2: boolean, _logger: Logger): Promise<FetchResult> {
   const urlParts = database.split('/');
   const protocol = urlParts[0];
   const domain = urlParts[2];
@@ -153,8 +146,8 @@ export async function fetch(
   }
 
   try {
-    const response = await axios(requestConfig);
-    const body: ElasticsearchResponse = response.data;
+    const response = await axios<ElasticsearchResponse>(requestConfig);
+    const body = response.data;
 
     if (!body || !body.hits) {
       return { hits: [] };
@@ -238,9 +231,7 @@ export async function deleteDocuments(
   }
 
   for (const chunk of chunks) {
-    await Promise.all(
-      chunk.map((hit) => deleteDocument(database, hit, logger))
-    );
+    await Promise.all(chunk.map((hit) => deleteDocument(database, hit, logger)));
   }
 }
 

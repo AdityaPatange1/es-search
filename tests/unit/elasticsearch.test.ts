@@ -15,11 +15,7 @@ import {
 } from '../../src/elasticsearch';
 import { createLogger } from '../../src/logger';
 import { QueryOptions, ElasticsearchHit } from '../../src/types';
-import {
-  mockElasticsearchResponse,
-  mockScrollResponse,
-  mockAggregationResponse,
-} from '../setup';
+import { mockElasticsearchResponse, mockScrollResponse, mockAggregationResponse } from '../setup';
 
 describe('Elasticsearch Client', () => {
   let mock: MockAdapter;

@@ -155,9 +155,12 @@ npm run cli            # ▶️ Run compiled CLI
 ```bash
 npm test               # 🧪 Run all tests
 npm run test:unit      # 🔬 Unit tests only
+npm run test:integration # 🐳 Integration tests (requires Docker)
 npm run test:coverage  # 📊 With coverage report
 npm run test:watch     # 👀 Watch mode
 ```
+
+> **Note:** Integration tests require Elasticsearch running via `./docker_spin_up.sh`
 
 ### Linting & Formatting
 
@@ -194,7 +197,8 @@ electric-safai/
 │   └── types.ts              # Type definitions
 ├── 📂 tests/                  # Test suite
 │   ├── setup.ts              # Test configuration
-│   └── unit/                 # Unit tests
+│   ├── unit/                 # Unit tests
+│   └── integration/          # Integration tests (Docker)
 ├── 📂 scripts/                # Shell scripts
 │   ├── build.sh              # Build script
 │   ├── lint.sh               # Linting script
@@ -208,6 +212,8 @@ electric-safai/
 │   └── CONTRIBUTING.md       # Contribution guide
 ├── 📂 bin/                    # CLI executable
 │   └── search                # Entry point
+├── docker_spin_up.sh         # 🐳 Docker ES setup
+├── test_cli.sh               # 🧪 CLI test examples
 ├── package.json              # Dependencies & scripts
 ├── tsconfig.json             # TypeScript config
 ├── jest.config.js            # Jest config
@@ -253,6 +259,29 @@ await scrollFetch(
 
 ---
 
+## 🐳 Docker Quick Start
+
+The fastest way to get started with a local Elasticsearch instance:
+
+```bash
+# Spin up Elasticsearch with test data
+./docker_spin_up.sh
+
+# Run a test query
+npm run cli -- -d "http://localhost:9200/test-index/_search" -q '{"match_all":{}}' --q2
+
+# Stop and remove when done
+docker stop electric-safai-es && docker rm electric-safai-es
+```
+
+The `docker_spin_up.sh` script will:
+- Start Elasticsearch 8.11.0 in a container
+- Wait for it to be ready
+- Create a `test-index` with sample documents
+- Show you a ready-to-run test command
+
+---
+
 ## 🛠️ Development Setup
 
 ```bash
@@ -269,8 +298,15 @@ npm run build
 # Run tests
 npm test
 
-# Start Elasticsearch (Docker)
-docker run -d -p 9200:9200 -e "discovery.type=single-node" elasticsearch:7.17.0
+# Start Elasticsearch with Docker (recommended)
+./docker_spin_up.sh
+
+# Or manually start Elasticsearch
+docker run -d --name electric-safai-es \
+  -p 9200:9200 \
+  -e "discovery.type=single-node" \
+  -e "xpack.security.enabled=false" \
+  elasticsearch:8.11.0
 
 # Create test index and seed data
 npm run db:create-index
