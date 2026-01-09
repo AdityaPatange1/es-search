@@ -1,0 +1,48 @@
+# ⚡ Electric Safai - Docker Compose
+# Development environment with Elasticsearch
+
+version: '3.8'
+
+services:
+  # Elasticsearch for development and testing
+  elasticsearch:
+    image: elasticsearch:7.17.0
+    container_name: electric-safai-es
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    networks:
+      - electric-safai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Kibana for visualization (optional)
+  kibana:
+    image: kibana:7.17.0
+    container_name: electric-safai-kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    networks:
+      - electric-safai-network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+volumes:
+  es-data:
+    driver: local
+
+networks:
+  electric-safai-network:
+    driver: bridge

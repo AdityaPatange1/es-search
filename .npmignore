@@ -1,2 +1,34 @@
+# ⚡ Electric Safai - NPM Ignore
+
+# Source files (publish dist only)
+src/
+tests/
 *.coffee
 bulid.sh
+publish.sh
+
+# Development config
+.eslintrc.js
+.prettierrc
+jest.config.js
+tsconfig.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Environment
+.env*
+
+# Git
+.git/
+.gitignore
+
+# Misc
+*.log
+*.bak

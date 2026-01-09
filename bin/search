@@ -1,4 +1,38 @@
 #!/usr/bin/env node
 
-var a = require('../index')
-a.main()
+/**
+ * ⚡ Electric Safai - CLI Entry Point
+ *
+ * This project is dedicated to the Indian Para SF Rinzai Monks
+ * to learn Search Techniques.
+ */
+
+const path = require('path');
+const fs = require('fs');
+
+// Check if compiled version exists
+const distCli = path.join(__dirname, '..', 'dist', 'cli.js');
+const srcCli = path.join(__dirname, '..', 'src', 'cli.ts');
+
+if (fs.existsSync(distCli)) {
+  // Use compiled version
+  require(distCli);
+} else {
+  // Fallback to ts-node for development
+  try {
+    require('ts-node').register({
+      transpileOnly: true,
+      compilerOptions: {
+        module: 'commonjs'
+      }
+    });
+    require(srcCli);
+  } catch (err) {
+    console.error('⚡ Electric Safai Error:');
+    console.error('   Please run "npm run build" first, or install ts-node for development.');
+    console.error('');
+    console.error('   npm run build    # Build the project');
+    console.error('   npm run dev      # Run in development mode');
+    process.exit(1);
+  }
+}
